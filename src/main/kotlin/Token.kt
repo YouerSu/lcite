@@ -1,23 +1,26 @@
 enum class Type {
     Int,
     Char,
-    Combination,
     Var,
-    Procedure
+    Procedure,
+    AtomicOperation
 }
 
 class Token(
     val metaType: Type,
     val coordinate: Pair<Int,Int>,
     val value: String
-): Eval() {
-    override fun eval(): Any {
+) {
+    fun getValue(): Any {
         return when(metaType){
             Type.Int -> value.toInt()
             Type.Char -> value.first()
-            Type.Combination -> TODO()
-            Type.Var -> TODO()
-            Type.Procedure -> TODO()
+            Type.Var,
+            Type.Procedure -> Env.lookUp(value)
+            Type.AtomicOperation -> when(value){
+
+                else -> TODO()
+            }
         }
     }
 }

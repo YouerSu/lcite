@@ -1,3 +1,3 @@
 abstract class Eval {
-    abstract fun eval():Any
+    abstract fun eval():Token
 }
