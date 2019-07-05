@@ -2,8 +2,7 @@ enum class Type {
     Int,
     Char,
     Var,
-    Procedure,
-    AtomicOperation
+    Procedure
 }
 
 class Token(
@@ -17,10 +16,6 @@ class Token(
             Type.Char -> value.first()
             Type.Var,
             Type.Procedure -> Env.lookUp(value)
-            Type.AtomicOperation -> when(value){
-
-                else -> TODO()
-            }
         }
     }
 }

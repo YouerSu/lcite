@@ -3,10 +3,12 @@ import java.util.*
 class ASTNode(private val procedure: Token, private val pars: LinkedList<Token>) {
     fun eval(): Any {
         val process = procedure.getValue()
-        return when {
-            process is ASTNode -> apply(process)
-            procedure.metaType == Type.AtomicOperation -> TODO()
-            else -> TODO()
+        return when (process) {
+            is ASTNode -> apply(process)
+            is Env.Companion.AtomicOperation -> {
+                process.procedure(pars.map { it.getValue() })
+            }
+            else -> error("Unknown grammar")
         }
     }
 
