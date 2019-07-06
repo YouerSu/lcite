@@ -1,14 +1,8 @@
-enum class Type {
-    Int,
-    Char,
-    Var,
-    Procedure
-}
-
 class Token(
     val metaType: Type,
-    val coordinate: Pair<Int,Int>,
-    val value: String
+    val value: String,
+    val row: Short,
+    val cow: Short
 ) {
     fun getValue(): Any {
         return when(metaType){

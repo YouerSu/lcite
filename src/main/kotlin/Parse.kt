@@ -1,7 +1,7 @@
-import java.io.BufferedInputStream
+class Parse {
 
-class Parse(val file: BufferedInputStream) {
-    var row: Short = 0
-    var cow: Short = 0
-    var nowToken: String = ""
+    private fun parse(token: Token){
+
+    }
+
 }

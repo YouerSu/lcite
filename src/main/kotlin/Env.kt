@@ -15,22 +15,22 @@ class Env {
             error("Can't find $key")
         }
 
-        fun addVar(key: String,any: Any){
+        fun bind(key: String, any: Any){
             env[Pair(key, scope)] = any
         }
 
-        fun removeVar(key: String){
+        fun untied(key: String){
             env.remove(Pair(key, scope))
         }
 
         private fun initAtomciOperation(){
-            addVar("+",
+            bind("+",
                 AtomicOperation(fun(list: List<Any>) = (list as List<Int>).sum()))
-            addVar("-",
+            bind("-",
                 AtomicOperation(fun(list: List<Any>) = (list as List<Int>).reduce(fun(a: Int,b: Int) = a - b)))
-            addVar("*",
+            bind("*",
                 AtomicOperation(fun(list: List<Any>) = (list as List<Int>).reduce(fun(a: Int,b: Int) = a * b)))
-            addVar("/",
+            bind("/",
                 AtomicOperation(fun(list: List<Any>) = (list as List<Int>).reduce(fun(a: Int,b: Int) = a / b)))
         }
 
