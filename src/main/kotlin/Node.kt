@@ -19,7 +19,7 @@ class Node(type: Type,private val procedure: FuncNode, private val pars: LinkedL
 
 class FuncNode(result: Type,val body: Any, val vars: LinkedList<String>): AbsNode(result) {
     override fun eval(): Any = when(body){
-                is AbsNode -> (body.eval() as FuncNode).eval()
+                is ValueNode -> (body.eval() as FuncNode).eval()
                 is Env.Companion.AtomicOperation -> body.procedure(vars.map { Env.lookUp(it) })
                 else -> error("Unknown grammar")
     }

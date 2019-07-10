@@ -2,7 +2,7 @@ class Token(
     val metaType: Type,
     val value: String,
     val row: Short,
-    val cow: Short,
+    val col: Short,
     val deep: Short
 ) {
     fun getValue(): Any {
