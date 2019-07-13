@@ -24,14 +24,14 @@ class Lexer(val file: String) {
         char == '\n'||
         char == '\r'
 
-    fun getNextToken(): Token{
+    fun getNextToken(): String{
         nowToken = ""
         whiteSpace()
         while (isWhiteSpace(getChar()).not()) {
             nowToken.plus(getChar())
             row++
         }
-        return Token(type(nowToken),nowToken,row,col,deepOfEnv)
+        return nowToken
     }
 
 

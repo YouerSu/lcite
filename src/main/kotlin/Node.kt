@@ -10,23 +10,23 @@ class Node(type: Type,private val procedure: FuncNode, private val pars: LinkedL
         Env.intoEnv()
         procedure.binds(pars)
         val value = procedure.eval()
-        procedure.vars.forEach { Env.untied(it) }
+        procedure.vars.forEach { Env.untied(it.value.toString()) }
         Env.leftEnv()
         return value
     }
 
 }
 
-class FuncNode(result: Type,val body: Any, val vars: LinkedList<String>): AbsNode(result) {
+class FuncNode(result: Type,val body: Any, val vars: LinkedList<ValueNode>): AbsNode(result) {
     override fun eval(): Any = when(body){
                 is ValueNode -> (body.eval() as FuncNode).eval()
-                is Env.Companion.AtomicOperation -> body.procedure(vars.map { Env.lookUp(it) })
+                is Env.Companion.AtomicOperation -> body.procedure(vars.map { it.eval() })
                 else -> error("Unknown grammar")
     }
 
     fun binds(values: LinkedList<ValueNode>) {
         for (count in 0..values.lastIndex)
-            Env.bind(vars[count],values[count])
+            Env.bind(vars[count].value.toString(),values[count])
     }
 
 }
