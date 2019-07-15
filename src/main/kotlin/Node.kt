@@ -17,7 +17,7 @@ class Node(type: Type,private val procedure: FuncNode, private val pars: LinkedL
 
 }
 
-class FuncNode(result: Type,val body: Any, val vars: LinkedList<ValueNode>): AbsNode(result) {
+class FuncNode(result: Type,val body: Any,val vars: LinkedList<ValueNode>): AbsNode(result) {
     override fun eval(): Any = when(body){
                 is ValueNode -> (body.eval() as FuncNode).eval()
                 is Env.Companion.AtomicOperation -> body.procedure(vars.map { it.eval() })

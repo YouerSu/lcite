@@ -1,38 +1,58 @@
+val Upper = 'A'..'Z'
+val Lower =  'a'..'z'
+val Var = Upper+Lower+'_'
+const val White = "\t\n\r "
 class Lexer(val file: String) {
-    var index: Int = 0
-    var row: Short = 0
-    var col: Short = 0
-    var deepOfEnv: Short = 0
-    var nowToken: String = ""
+    private var index: Int = 0
+    private var row: Short = 0
+    private var col: Short = 0
+    private var char: Char = ' '
 
-
-    fun getChar(): Char = file[index]
-    fun getNextChar(): Char = file[++index]
-
-    fun whiteSpace(){
-        while (getChar() == ' '||getChar() == '\t') row++
-        while (getChar() == '\r') row = 0
-        while (getChar()=='\n') {
-            row = 0
-            col++
+    private fun next(){
+        if (index<file.lastIndex) {
+            index++
+            char = file[index]
+            when (char) {
+                '\n' -> {
+                    row = 0
+                    col++
+                }
+                '\r' -> row = 0
+                else -> row++
+            }
         }
+        else char = ' '
     }
 
-    fun isWhiteSpace(char: Char) =
-        char == ' '||
-        char == '\t'||
-        char == '\n'||
-        char == '\r'
+    private fun separation(char: Char) = index >= file.length||char in White
 
-    fun getNextToken(): String{
-        nowToken = ""
+    private fun whiteSpace(){
+        while (separation(char)) next()
+    }
+
+    fun getNextToken(): Token{
+        fun getString(): String{
+            var str = ""
+            while (separation(char)) {
+                str += char
+                next()
+            }
+            return str
+        }
+        fun createToken(symbol: Symbol,str: String = getString()) = Token(symbol, str, row, col)
         whiteSpace()
-        while (isWhiteSpace(getChar()).not()) {
-            nowToken.plus(getChar())
-            row++
+        return when(char){
+            '(' -> createToken(Symbol.Start)
+            ')' -> createToken(Symbol.End)
+            '-' -> {
+                val str = getString()
+                if (str.length>1) createToken(Symbol.Number)
+                else createToken(Symbol.Operation,str)
+            }
+            in '0'..'9' -> createToken(Symbol.Number)
+            in  Var -> createToken(Symbol.Var)
+            else -> TODO()
         }
-        return nowToken
     }
-
 
 }
