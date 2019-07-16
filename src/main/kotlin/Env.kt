@@ -1,7 +1,7 @@
 import kotlin.collections.HashMap
 
 class Env {
-    val env = HashMap<Pair<String,Int>,Any>()
+    val env = HashMap<Pair<String,Int>,ValueNode>()
 
     companion object{
         class AtomicOperation(val procedure :(List<Any>) -> Any)
@@ -10,13 +10,13 @@ class Env {
         fun leftEnv(){ scope -= 1 }
         fun intoEnv(){ scope += 1 }
 
-        fun lookUp(key: String): Any{
+        fun lookUp(key: String): ValueNode{
             for (nowEnv in scope downTo 0) env[Pair(key, nowEnv)]?.let { return it}
             error("Can't find $key")
         }
 
-        fun bind(key: String, any: Any){
-            env[Pair(key, scope)] = any
+        fun bind(key: String, value: ValueNode){
+            env[Pair(key, scope)] = value
         }
 
         fun untied(key: String){
@@ -24,6 +24,9 @@ class Env {
         }
 
         private fun initAtomciOperation(){
+            fun bind(key: String, operation: AtomicOperation){
+                Companion.bind(key,ValueNode(Type.Procedure,operation))
+            }
             bind("+",
                 AtomicOperation(fun(list: List<Any>) = (list as List<Int>).sum()))
             bind("-",

@@ -2,5 +2,7 @@ enum class Type {
     Int,
     Char,
     Var,
-    Procedure
+    Procedure,
+    Empty,
+    String
 }
