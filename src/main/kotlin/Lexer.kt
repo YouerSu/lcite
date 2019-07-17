@@ -47,7 +47,7 @@ class Lexer(val file: String) {
             '-' -> {
                 val str = getString()
                 if (str.length>1) createToken(Symbol.Number)
-                else createToken(Symbol.Operation,str)
+                else createToken(Symbol.Var,str)
             }
             in '0'..'9' -> createToken(Symbol.Number)
             in  Var -> createToken(Symbol.Var)

@@ -1,48 +1,49 @@
 import java.util.*
 
-abstract class AbsNode(private val type: Type){
-    abstract fun eval(): Any
-    open fun getType() = type
-}
-
-class Node(type: Type,private val procedure: FuncNode, private val pars: LinkedList<ValueNode>): AbsNode(type) {
-    override fun eval(): Any {
+class Node(val type: Type,private val procedure: ValueNode, private val pars: LinkedList<ValueNode>) {
+    fun eval(): Any {
         Env.intoEnv()
-        procedure.binds(pars)
-        val value = procedure.eval()
-        procedure.vars.forEach { Env.untied(it.value.toString()) }
+        val value = (procedure.eval() as FuncNode).eval(pars)
         Env.leftEnv()
         return value
     }
 
 }
 
-class FuncNode(result: Type,val body: Any,val vars: LinkedList<ValueNode>): AbsNode(result) {
-    override fun eval(): Any = when(body){
-                is ValueNode -> (body.eval() as FuncNode).eval()
-                is Env.Companion.AtomicOperation -> body.procedure(vars.map { it.eval() })
-                else -> error("Unknown grammar")
-    }
+class FuncNode(result: Type, private val body: ValueNode, private val vars: LinkedList<ValueNode>) {
+    fun eval(values: LinkedList<ValueNode>): Any =
+        when (val func = body.eval()) {
+            is ValueNode -> {
+                (body.eval() as FuncNode).eval(values)
+            }
 
-    fun binds(values: LinkedList<ValueNode>) {
+            is Node -> {
+                binds(values)
+                func.eval()
+                vars.forEach { Env.untied(it.value.toString()) }
+            }
+
+            is Env.Companion.AtomicOperation -> func.procedure(vars.map { it.eval() })
+
+            else -> error("Unknown grammar")
+        }
+
+    private fun binds(values: LinkedList<ValueNode>) {
         for (count in 0..values.lastIndex)
             Env.bind(vars[count].value.toString(),values[count])
     }
 
 }
 
-class ValueNode(type: Type,val value: Any): AbsNode(type) {
-    override fun eval(): Any {
-        val result = when {
+class ValueNode(private val type: Type, val value: Any) {
+    fun eval(): Any = when {
             value is Node -> value.eval()
-            super.getType() == Type.Var -> getValueNode().eval()
+            type == Type.Var -> getValueNode().eval()
             else -> value
         }
-        return result
-    }
 
-    override fun getType(): Type = getValueNode().getType()
+    fun getValueType(): Type = getValueNode().getValueType()
 
-    private fun getValueNode() = if (super.getType() == Type.Var) (Env.lookUp(value.toString()) as ValueNode) else this
+    private fun getValueNode() = if (type == Type.Var) Env.lookUp(value.toString()) else this
 
 }

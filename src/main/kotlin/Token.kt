@@ -1,7 +1,6 @@
 enum class Symbol{
     Start,
     End,
-    Operation,
     Number,
     String,
     Var,
