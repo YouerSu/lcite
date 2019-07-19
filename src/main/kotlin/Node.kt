@@ -13,17 +13,16 @@ class Node(val type: Type,private val procedure: ValueNode, private val pars: Li
 class FuncNode(result: Type, private val body: ValueNode, private val vars: LinkedList<ValueNode>) {
     fun eval(values: LinkedList<ValueNode>): Any =
         when (val func = body.eval()) {
-            is ValueNode -> {
-                (body.eval() as FuncNode).eval(values)
+            is FuncNode -> {
+                func.eval(values)
             }
-
             is Node -> {
                 binds(values)
                 func.eval()
                 vars.forEach { Env.untied(it.value.toString()) }
             }
 
-            is Env.Companion.AtomicOperation -> func.procedure(vars.map { it.eval() })
+            is Env.Companion.AtomicOperation -> func.procedure(values.map { it.eval() })
 
             else -> error("Unknown grammar")
         }
@@ -38,11 +37,12 @@ class FuncNode(result: Type, private val body: ValueNode, private val vars: Link
 class ValueNode(private val type: Type, val value: Any) {
     fun eval(): Any = when {
             value is Node -> value.eval()
+            value is ValueNode -> value.eval()
             type == Type.Var -> getValueNode().eval()
             else -> value
         }
 
-    fun getValueType(): Type = getValueNode().getValueType()
+    fun getValueType(): Type = if (type == Type.Var) getValueNode().getValueType() else type
 
     private fun getValueNode() = if (type == Type.Var) Env.lookUp(value.toString()) else this
 

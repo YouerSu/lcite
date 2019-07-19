@@ -1,16 +1,11 @@
-val Upper = 'A'..'Z'
-val Lower =  'a'..'z'
-val Var = Upper+Lower+'_'
-const val White = "\t\n\r "
 class Lexer(val file: String) {
     private var index: Int = 0
     private var row: Short = 0
     private var col: Short = 0
-    private var char: Char = ' '
+    private var char: Char = file[index]
 
     private fun next(){
-        if (index<file.lastIndex) {
-            index++
+        if (++index<=file.lastIndex) {
             char = file[index]
             when (char) {
                 '\n' -> {
@@ -24,33 +19,37 @@ class Lexer(val file: String) {
         else char = ' '
     }
 
-    private fun separation(char: Char) = index >= file.length||char in White
-
     private fun whiteSpace(){
-        while (separation(char)) next()
+        fun white(char: Char) = index < file.lastIndex&&White.contains(char)
+        while (white(char)) next()
     }
 
     fun getNextToken(): Token{
         fun getString(): String{
             var str = ""
-            while (separation(char)) {
+            while (White.contains(char).not()&&char != ')') {
                 str += char
                 next()
             }
+            next()
             return str
         }
         fun createToken(symbol: Symbol,str: String = getString()) = Token(symbol, str, row, col)
+        if (index>file.lastIndex) return Token(Symbol.EOF,"",row,col)
         whiteSpace()
         return when(char){
-            '(' -> createToken(Symbol.Start)
-            ')' -> createToken(Symbol.End)
+            '(' -> {
+                next()
+                createToken(Symbol.Start,"(")
+            }
+            ')' -> createToken(Symbol.End,")")
             '-' -> {
                 val str = getString()
                 if (str.length>1) createToken(Symbol.Number)
                 else createToken(Symbol.Var,str)
             }
-            in '0'..'9' -> createToken(Symbol.Number)
-            in  Var -> createToken(Symbol.Var)
+            in Number -> createToken(Symbol.Number)
+            in  Var+'+'+'*'+'/' -> createToken(Symbol.Var)
             else -> TODO()
         }
     }

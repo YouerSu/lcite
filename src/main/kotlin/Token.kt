@@ -4,7 +4,7 @@ enum class Symbol{
     Number,
     String,
     Var,
-    EOL,
+    EOF,
 }
 
 class Token(

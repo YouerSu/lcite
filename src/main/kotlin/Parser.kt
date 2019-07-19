@@ -1,3 +1,4 @@
+import java.lang.NumberFormatException
 import java.util.*
 
 class Parser(val lexer: Lexer) {
@@ -13,7 +14,7 @@ class Parser(val lexer: Lexer) {
             Symbol.Number -> number(token)
             Symbol.String -> ValueNode(Type.String,token.value)
             Symbol.Var -> Env.lookUp(token.value)
-            Symbol.EOL -> TODO()
+            Symbol.EOF -> ValueNode(Type.Empty,Symbol.EOF)
         }
     }
 
@@ -22,14 +23,39 @@ class Parser(val lexer: Lexer) {
         val func = parse()
         while(true){
             val value = parse()
-            if (value.value == Type.Empty)
+            if (value.getValueType() == Type.Empty)
                 return Node(func.getValueType(),func,linkedList)
             else linkedList.add(value)
         }
     }
 
     private fun number(token: Token): ValueNode{
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val value = token.value
+        fun doubleOrFloat(): ValueNode =
+            if (value.last() == 'F') ValueNode(Type.Float,value.toFloat())
+            else ValueNode(Type.Double,value.toDouble())
+
+        fun intOrLong(): ValueNode =
+            if (value.last() == 'L') ValueNode(Type.Long,value.toLong())
+            else ValueNode(Type.Double,value.toInt())
+        try {
+            value.forEach {
+                when(it){
+                    'x','X','b','B' -> return intOrLong()
+                    'e','E' -> return doubleOrFloat()
+                    'F' -> return ValueNode(Type.Float,token.value.toFloat())
+                    'L' -> return ValueNode(Type.Long,token.value.toLong())
+                }
+            }
+            return intOrLong()
+        }catch (e: NumberFormatException){
+            error("$value can't be regarded as a number")
+        }
     }
 
+}
+
+fun main() {
+    Env.init()
+    print(Parser(Lexer("(+ 1 1)")).parse().eval())
 }

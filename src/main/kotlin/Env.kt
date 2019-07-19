@@ -1,3 +1,4 @@
+import java.util.*
 import kotlin.collections.HashMap
 
 class Env {
@@ -23,18 +24,22 @@ class Env {
             env.remove(Pair(key, scope))
         }
 
-        private fun initAtomciOperation(){
-            fun bind(key: String, operation: AtomicOperation){
-                Companion.bind(key,ValueNode(Type.Procedure,operation))
+        private fun initAtomicOperation(){
+            fun bind(key: String, type: Type, operation: AtomicOperation){
+                Companion.bind(key,ValueNode(Type.Procedure,FuncNode(type,ValueNode(Type.Procedure,operation), LinkedList())))
             }
-            bind("+",
+            bind("+",Type.Number,
                 AtomicOperation(fun(list: List<Any>) = (list as List<Int>).sum()))
-            bind("-",
+            bind("-",Type.Number,
                 AtomicOperation(fun(list: List<Any>) = (list as List<Int>).reduce(fun(a: Int,b: Int) = a - b)))
-            bind("*",
+            bind("*",Type.Number,
                 AtomicOperation(fun(list: List<Any>) = (list as List<Int>).reduce(fun(a: Int,b: Int) = a * b)))
-            bind("/",
+            bind("/",Type.Number,
                 AtomicOperation(fun(list: List<Any>) = (list as List<Int>).reduce(fun(a: Int,b: Int) = a / b)))
+        }
+
+        fun init() {
+            initAtomicOperation()
         }
 
     }
