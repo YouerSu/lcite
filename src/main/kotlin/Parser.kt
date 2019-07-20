@@ -1,7 +1,7 @@
 import java.lang.NumberFormatException
 import java.util.*
 
-class Parser(val lexer: Lexer) {
+class Parser(private val lexer: Lexer) {
 
     fun parse(): ValueNode{
         val token = lexer.getNextToken()
@@ -13,7 +13,7 @@ class Parser(val lexer: Lexer) {
             Symbol.End -> ValueNode(Type.Empty,Symbol.End)
             Symbol.Number -> number(token)
             Symbol.String -> ValueNode(Type.String,token.value)
-            Symbol.Var -> Env.lookUp(token.value)
+            Symbol.Var -> ValueNode(Type.Var,token.value)
             Symbol.EOF -> ValueNode(Type.Empty,Symbol.EOF)
         }
     }
@@ -53,9 +53,4 @@ class Parser(val lexer: Lexer) {
         }
     }
 
-}
-
-fun main() {
-    Env.init()
-    print(Parser(Lexer("(+ 1 1)")).parse().eval())
 }

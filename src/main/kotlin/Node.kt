@@ -22,7 +22,7 @@ class FuncNode(result: Type, private val body: ValueNode, private val vars: Link
                 vars.forEach { Env.untied(it.value.toString()) }
             }
 
-            is Env.Companion.AtomicOperation -> func.procedure(values.map { it.eval() })
+            is Basic -> func.procedure(values)
 
             else -> error("Unknown grammar")
         }
