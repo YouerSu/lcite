@@ -1,8 +1,8 @@
-class Lexer(val file: String) {
+class Lexer(private val file: String) {
     private var index: Int = 0
-    private var row: Short = 0
-    private var col: Short = 0
-    private var char: Char = file[index]
+    private var row: Short = 1
+    private var col: Short = 1
+    private var char: Char = file.first()
 
     private fun next(){
         if (++index<=file.lastIndex) {
@@ -31,7 +31,6 @@ class Lexer(val file: String) {
                 str += char
                 next()
             }
-            next()
             return str
         }
         fun createToken(symbol: Symbol,str: String = getString()) = Token(symbol, str, row, col)

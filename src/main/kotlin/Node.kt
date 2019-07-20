@@ -1,3 +1,4 @@
+import lib.Basic
 import java.util.*
 
 class Node(val type: Type,private val procedure: ValueNode, private val pars: LinkedList<ValueNode>) {
@@ -18,8 +19,9 @@ class FuncNode(result: Type, private val body: ValueNode, private val vars: Link
             }
             is Node -> {
                 binds(values)
-                func.eval()
+                val result = func.eval()
                 vars.forEach { Env.untied(it.value.toString()) }
+                result
             }
 
             is Basic -> func.procedure(values)

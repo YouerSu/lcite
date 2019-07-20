@@ -1,3 +1,5 @@
+import lib.Basic
+import lib.Operator
 import java.lang.NumberFormatException
 import java.util.*
 
@@ -37,7 +39,7 @@ class Parser(private val lexer: Lexer) {
 
         fun intOrLong(): ValueNode =
             if (value.last() == 'L') ValueNode(Type.Long,value.toLong())
-            else ValueNode(Type.Double,value.toInt())
+            else ValueNode(Type.Int,value.toInt())
         try {
             value.forEach {
                 when(it){
@@ -53,4 +55,11 @@ class Parser(private val lexer: Lexer) {
         }
     }
 
+}
+
+fun main() {
+    Operator.init()
+    print(
+    Parser(Lexer("(+ 1 1)")).parse().eval()
+    )
 }
