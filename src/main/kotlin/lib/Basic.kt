@@ -2,8 +2,10 @@ package lib
 
 import Env
 import Type
+import Node
 import ValueNode
 import FuncNode
+import check
 import java.util.*
 
 fun Basic.import(name: String, type: Type){
@@ -64,11 +66,28 @@ class Operator{
                 else -> error("")
             }//result::class = Double|Long|Float|Double
 
+        private fun def(values: LinkedList<ValueNode>){
+            val variable = values.first
+            if (variable.getValueType().check(Type.Var)) error("")
+            else Env.bind(variable.value.toString(),values.last)
+        }
+
+        private fun lambda(values: LinkedList<ValueNode>): FuncNode{
+            fun Node.toParameters(): LinkedList<ValueNode> =
+                this.pars.let { it.addFirst(this.procedure); return@let it }
+            val parameter = values.first.eval()
+            val body = values.last.eval()
+            return if (parameter is Node&&body is Node) FuncNode(body.type,values.last,parameter.toParameters())
+            else error("")
+        }
+
         fun init(){
             bindOp("+",Type.Number,this::add)
             bindOp("-",Type.Number,this::minus)
             bindOp("*",Type.Number,this::multiply)
             bindOp("/",Type.Number,this::divide)
+            bindOp(this::def.name,Type.Empty,this::def)
+            bindOp("fun",Type.Procedure,this::lambda)
         }
     }
 }

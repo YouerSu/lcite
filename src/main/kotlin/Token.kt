@@ -10,6 +10,6 @@ enum class Symbol{
 class Token(
     val symbol: Symbol,
     val value: String,
-    val row: Short,
-    val col: Short
+    val row: Int,
+    val col: Int
 ) {}

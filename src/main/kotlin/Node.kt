@@ -1,7 +1,7 @@
 import lib.Basic
 import java.util.*
 
-class Node(val type: Type,private val procedure: ValueNode, private val pars: LinkedList<ValueNode>) {
+class Node(val type: Type, val procedure: ValueNode, val pars: LinkedList<ValueNode>) {
     fun eval(): Any {
         Env.intoEnv()
         val value = (procedure.eval() as FuncNode).eval(pars)

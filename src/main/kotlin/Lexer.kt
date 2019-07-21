@@ -1,25 +1,29 @@
 class Lexer(private val file: String) {
     private var index: Int = 0
-    private var row: Short = 1
-    private var col: Short = 1
-    private var char: Char = file.first()
+    private var line: Int = 1
+    private var col: Int = 1
+    private var char: Char
+
+    init {
+        char = file.first()
+    }
 
     private fun next(){
         if (++index<=file.lastIndex) {
             char = file[index]
             when (char) {
                 '\n' -> {
-                    row = 0
+                    line = 0
                     col++
                 }
-                '\r' -> row = 0
-                else -> row++
+                '\r' -> line = 0
+                else -> line++
             }
         }
         else char = ' '
     }
 
-    private fun whiteSpace(){
+    private fun delBlank(){
         fun white(char: Char) = index < file.lastIndex&&White.contains(char)
         while (white(char)) next()
     }
@@ -33,9 +37,9 @@ class Lexer(private val file: String) {
             }
             return str
         }
-        fun createToken(symbol: Symbol,str: String = getString()) = Token(symbol, str, row, col)
-        if (index>file.lastIndex) return Token(Symbol.EOF,"",row,col)
-        whiteSpace()
+        fun createToken(symbol: Symbol,str: String = getString()) = Token(symbol, str, line, col)
+        if (index>file.lastIndex) return Token(Symbol.EOF,"",line,col)
+        delBlank()
         return when(char){
             '(' -> {
                 next()

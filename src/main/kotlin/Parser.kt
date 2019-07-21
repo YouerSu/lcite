@@ -1,4 +1,3 @@
-import lib.Basic
 import lib.Operator
 import java.lang.NumberFormatException
 import java.util.*
@@ -59,7 +58,12 @@ class Parser(private val lexer: Lexer) {
 
 fun main() {
     Operator.init()
+    val source = """
+        (def x 10)
+        (def func 
+            (fun (a b c) (+ 1 (* a b c))))
+    """.trimIndent()
     print(
-    Parser(Lexer("(+ 1 1)")).parse().eval()
+    Parser(Lexer(source)).parse().eval()
     )
 }
