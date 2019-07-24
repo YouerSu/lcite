@@ -8,8 +8,9 @@ class Lexer(private val file: String) {
         char = file.first()
     }
 
-    private fun next(){
-        if (++index<=file.lastIndex) {
+    private fun nextChar(){
+        if (index<file.lastIndex) {
+            index += 1
             char = file[index]
             when (char) {
                 '\n' -> {
@@ -20,41 +21,45 @@ class Lexer(private val file: String) {
                 else -> line++
             }
         }
-        else char = ' '
-    }
-
-    private fun delBlank(){
-        fun white(char: Char) = index < file.lastIndex&&White.contains(char)
-        while (white(char)) next()
+        else char = '\u0000'
     }
 
     fun getNextToken(): Token{
-        fun getString(): String{
-            var str = ""
-            while (White.contains(char).not()&&char != ')') {
-                str += char
-                next()
-            }
-            return str
-        }
-        fun createToken(symbol: Symbol,str: String = getString()) = Token(symbol, str, line, col)
-        if (index>file.lastIndex) return Token(Symbol.EOF,"",line,col)
         delBlank()
-        return when(char){
-            '(' -> {
-                next()
-                createToken(Symbol.Start,"(")
-            }
-            ')' -> createToken(Symbol.End,")")
-            '-' -> {
-                val str = getString()
-                if (str.length>1) createToken(Symbol.Number)
-                else createToken(Symbol.Var,str)
-            }
-            in Number -> createToken(Symbol.Number)
-            in  Var+'+'+'*'+'/' -> createToken(Symbol.Var)
-            else -> TODO()
+        val tokenString =
+        if (isSingleToken(char)){
+            val result = char
+            nextChar()
+            result.toString()
+        }else {
+            var str = ""
+            do{
+                str += char
+                nextChar()
+            } while (
+                isBlank(char).not()&&
+                isSingleToken(char).not()
+            )
+            str
         }
+        Identity.values().forEach { if (it.isMe(tokenString)) return Token(it,tokenString,line,col) }
+        error("Can't regard $tokenString as any ")
     }
+
+    private fun isBlank(char: Char): Boolean{
+        val blank = "\t\n\r "
+        return blank.contains(char)
+    }
+
+    private fun delBlank(){
+        while (isBlank(char)) nextChar()
+    }
+
+    private fun isSingleToken(char: Char): Boolean =
+        when(char){
+            '-' -> isBlank(file[index+1])
+            '(',')','+','*','/' -> true
+            else -> false
+        }
 
 }

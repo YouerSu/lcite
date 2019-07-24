@@ -1,15 +1,6 @@
-enum class Symbol{
-    Start,
-    End,
-    Number,
-    String,
-    Var,
-    EOF,
-}
-
 class Token(
-    val symbol: Symbol,
+    val identity: Identity,
     val value: String,
-    val row: Int,
+    val line: Int,
     val col: Int
 ) {}

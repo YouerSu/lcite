@@ -1,7 +1,7 @@
 import lib.Basic
 import java.util.*
 
-class Node(val type: Type, val procedure: ValueNode, val pars: LinkedList<ValueNode>) {
+class Node(val identity: Identity, val procedure: ValueNode, val pars: LinkedList<ValueNode>) {
     fun eval(): Any {
         Env.intoEnv()
         val value = (procedure.eval() as FuncNode).eval(pars)
@@ -11,7 +11,7 @@ class Node(val type: Type, val procedure: ValueNode, val pars: LinkedList<ValueN
 
 }
 
-class FuncNode(result: Type, private val body: ValueNode, private val vars: LinkedList<ValueNode>) {
+class FuncNode(result: Identity, private val body: ValueNode, private val vars: LinkedList<ValueNode>) {
     fun eval(values: LinkedList<ValueNode>): Any =
         when (val func = body.eval()) {
             is FuncNode -> {
@@ -36,16 +36,16 @@ class FuncNode(result: Type, private val body: ValueNode, private val vars: Link
 
 }
 
-class ValueNode(private val type: Type, val value: Any) {
+class ValueNode(private val identity: Identity, val value: Any) {
     fun eval(): Any = when {
             value is Node -> value.eval()
             value is ValueNode -> value.eval()
-            type == Type.Var -> getValueNode().eval()
+            identity == Identity.Var -> getValueNode().eval()
             else -> value
         }
 
-    fun getValueType(): Type = if (type == Type.Var) getValueNode().getValueType() else type
+    fun getValueType(): Identity = if (identity == Identity.Var) getValueNode().getValueType() else identity
 
-    private fun getValueNode() = if (type == Type.Var) Env.lookUp(value.toString()) else this
+    private fun getValueNode() = if (identity == Identity.Var) Env.lookUp(value.toString()) else this
 
 }
