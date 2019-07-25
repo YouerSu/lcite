@@ -1,7 +1,9 @@
+package parser
+
 import kotlin.collections.HashMap
 
 class Env {
-    val env = HashMap<Pair<String,Int>,ValueNode>()
+    val env = HashMap<Pair<String,Int>, ValueNode>()
 
     companion object{
 
@@ -10,7 +12,7 @@ class Env {
         fun leftEnv(){ scope -= 1 }
         fun intoEnv(){ scope += 1 }
 
-        fun lookUp(key: String): ValueNode{
+        fun lookUp(key: String): ValueNode {
             for (nowEnv in scope downTo 0) env[Pair(key, nowEnv)]?.let { return it}
             error("Can't find $key")
         }

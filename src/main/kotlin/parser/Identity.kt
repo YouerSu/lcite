@@ -1,3 +1,5 @@
+package parser
+
 enum class Identity {
     Start {
         override fun isMe(str: kotlin.String): Boolean {
@@ -68,6 +70,15 @@ enum class Identity {
 
         override fun toValue(str: kotlin.String): Any = str
     },
+    AtomicOperation {
+        override fun isMe(str: kotlin.String): Boolean {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
+
+        override fun toValue(str: kotlin.String): ValueNode {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
+    },
     Procedure {
         override fun isMe(str: kotlin.String): Boolean {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -101,5 +112,5 @@ val Lower =  'a'..'z'
 val Var = Upper + Lower + '_'
 const val White = "\t\n\r "
 
-fun isNumber(identity: Identity) = identity == Identity.Int||identity == Identity.Long||identity == Identity.Float||identity == Identity.Double
+fun isNumber(identity: Identity) = identity == Identity.Int ||identity == Identity.Long ||identity == Identity.Float ||identity == Identity.Double
 fun Identity.check(identity: Identity) = this == identity
