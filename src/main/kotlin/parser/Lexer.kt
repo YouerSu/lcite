@@ -28,26 +28,32 @@ class Lexer(private val file: String) {
 
     fun getNextToken(): Token {
         delBlank()
-
-        if (Identity.Start.isMe(peek.toString())){
-            peek()
-            return Token(Identity.Start,"(",line, col)
-        }else {
-            var tokenString = ""
-            do{
-                tokenString += peek
+        when {
+            Identity.Start.isMe(peek.toString()) -> {
                 peek()
-            } while (
-                isBlank(peek).not()&&
-                Identity.End.isMe(peek.toString()).not()
-            )
-            Identity.values().forEach { if (it.isMe(tokenString)) return Token(it, tokenString, line, col) }
-            error("Can't regard $tokenString as any Identity")
+                return Token(Identity.Start,"(",line, col)
+            }
+            Identity.Escape.isMe(peek.toString()) -> {
+                peek()
+                return Token(Identity.Escape,"'",line, col)
+            }
+            else -> {
+                var tokenString = ""
+                do{
+                    tokenString += peek
+                    peek()
+                } while (
+                    isBlank(peek).not()&&
+                    Identity.End.isMe(peek.toString()).not()
+                )
+                Identity.values().forEach { if (it.isMe(tokenString)) return Token(it, tokenString, line, col) }
+                error("Can't regard $tokenString as any Identity")
+            }
         }
     }
 
     private fun isBlank(char: Char): Boolean{
-        val blank = "\t\n\r "
+        val blank = "\t\n\r\u0000 "
         return blank.contains(char)
     }
 

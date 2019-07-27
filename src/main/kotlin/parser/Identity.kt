@@ -1,108 +1,121 @@
 package parser
 
+import lib.*
+
 enum class Identity {
     Start {
         override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun toValue(str: kotlin.String): Any {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return str == "("
         }
     },
     End {
         override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun toValue(str: kotlin.String): Any {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return str == ")"
         }
     },
-    Number{
-        override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun toValue(str: kotlin.String): kotlin.Number{
-            TODO()
-        }
-    },
+    Number,
     Int {
         override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            var index = 0
+            if (str.first() == '-'){
+                index += 1
+            }
+            str.drop(index).forEach { if ((it in parser.Number).not()) return false}
+            return true
         }
 
         override fun toValue(str: kotlin.String): kotlin.Int = str.toInt()
     },
     Long {
         override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (Int.isMe(str.dropLast(1))){
+                return str.last() == 'L'||str.last() == 'l'
+            }else {
+                return false
+            }
         }
 
         override fun toValue(str: kotlin.String): kotlin.Long = str.toLong()
     },
-    Float {
-        override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun toValue(str: kotlin.String): kotlin.Float = str.toFloat()
-    },
     Double {
         override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            var count = 0
+            str.forEach {
+                val double = parser.Number+'E'+'e'+'+'+'-'
+                if (it == '.') count++
+                else if ((it in double).not()) return false
+            }
+            return count == 1
         }
 
         override fun toValue(str: kotlin.String): kotlin.Double = str.toDouble()
     },
-    Char {
+    Float {
         override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (Double.isMe(str.dropLast(1))){
+                return str.last() == 'F'||str.last() == 'f'
+            }else {
+                return false
+            }
         }
 
-        override fun toValue(str: kotlin.String): kotlin.Char = str.first()
+        override fun toValue(str: kotlin.String): kotlin.Float = str.toFloat()
+    },
+    Char {
+        override fun isMe(str: kotlin.String): Boolean {
+            return str.length == 3&&str[0] == '#'&&str[1] == '\\'
+        }
+
+        override fun toValue(str: kotlin.String): kotlin.Char = str[2]
+    },
+    AtomicOperation {
+        override fun isMe(str: kotlin.String): Boolean {
+            return when(str){
+                add, minus, multiply, divide, define, lambda -> true
+                else -> false
+            }
+        }
+
+        override fun toValue(str: kotlin.String): Operation {
+            return when(str){
+                add -> Add()
+                minus -> Minus()
+                multiply -> Multiply()
+                divide -> Divide()
+                define -> Define()
+                lambda -> Lambda()
+                else -> error("$str isn't a atomic operation")
+            }
+        }
     },
     Var {
         override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            str.forEach { if ((it in parser.Var).not()) return false}
+            return true
         }
 
         override fun toValue(str: kotlin.String): Any = str
     },
-    AtomicOperation {
-        override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun toValue(str: kotlin.String): ValueNode {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-    },
-    Procedure {
-        override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun toValue(str: kotlin.String): Any {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-    },
+    Procedure,
     String {
         override fun isMe(str: kotlin.String): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return str.first() == '"'&&str.last() == '"'
         }
 
         override fun toValue(str: kotlin.String): kotlin.String = str
     },
+    Cons,
+    Escape{
+        override fun isMe(str: kotlin.String): Boolean = str == "'"
+
+        override fun toValue(str: kotlin.String): Any = Escape
+    },
     EOF {
         override fun isMe(str: kotlin.String): Boolean = str.first() == '\u0000'
-
-        override fun toValue(str: kotlin.String): Any = EOF
     };
 
-    abstract fun isMe(str: kotlin.String): Boolean
-    abstract fun toValue(str: kotlin.String): Any
+    open fun isMe(str: kotlin.String): Boolean = false
+    open fun toValue(str: kotlin.String): Any = this
 }
 
 
@@ -110,7 +123,9 @@ val Number = '0'..'9'
 val Upper = 'A'..'Z'
 val Lower =  'a'..'z'
 val Var = Upper + Lower + '_'
-const val White = "\t\n\r "
-
-fun isNumber(identity: Identity) = identity == Identity.Int ||identity == Identity.Long ||identity == Identity.Float ||identity == Identity.Double
-fun Identity.check(identity: Identity) = this == identity
+const val add = "+"
+const val minus = "-"
+const val multiply = "*"
+const val divide = "/"
+const val define = "def"
+const val lambda = "func"

@@ -1,5 +1,6 @@
 package parser
 
+import lib.Operation
 import java.util.*
 
 class Parser(private val lexer: Lexer) {
@@ -8,8 +9,20 @@ class Parser(private val lexer: Lexer) {
         val token = lexer.getNextToken()
         return when(token.identity){
             Identity.Start -> getASTNode()
-            Identity.AtomicOperation -> Identity.AtomicOperation.toValue(token.value) as ValueNode
+            Identity.AtomicOperation -> AtomicRootNode(Identity.AtomicOperation.toValue(token.value) as Operation,Data(token.identity,token.line,token.col))
+            Identity.Escape -> eParse()
             else -> ValueNode(token.identity.toValue(token.value),Data(token.identity,token.line,token.col))
+        }
+    }
+
+    private fun eParse(): Node {
+        val token = lexer.getNextToken()
+        return when(token.identity){
+            Identity.Start -> ArrayNode(
+                getParameters(),
+                Data(Identity.Cons,token.line,token.col)
+            )
+            else -> error("Can't escape the ${token.value}")
         }
     }
 
@@ -23,8 +36,7 @@ class Parser(private val lexer: Lexer) {
     private fun getValueNode(): ValueNode {
         return when (val value = parse()) {
             is ValueNode -> value
-            is ASTNode -> ValueNode(value, value.data)
-            else -> error("")
+            else -> ValueNode(value, value.data)
         }
     }
 
@@ -54,29 +66,4 @@ class Parser(private val lexer: Lexer) {
             else -> root.data.DataError("")
         }
     }
-
-//    private fun number(token: parser.Token): parser.ValueNode{
-//        val value = token.value
-//        fun doubleOrFloat(): parser.ValueNode =
-//            if (value.last() == 'F') parser.ValueNode(parser.Identity.Float,value.toFloat())
-//            else parser.ValueNode(parser.Identity.Double,value.toDouble())
-//
-//        fun intOrLong(): parser.ValueNode =
-//            if (value.last() == 'L') parser.ValueNode(parser.Identity.Long,value.toLong())
-//            else parser.ValueNode(parser.Identity.Int,value.toInt())
-//        try {
-//            value.forEach {
-//                when(it){
-//                    'x','X','b','B' -> return intOrLong()
-//                    'e','E' -> return doubleOrFloat()
-//                    'F' -> return parser.ValueNode(parser.Identity.Float,token.value.toFloat())
-//                    'L' -> return parser.ValueNode(parser.Identity.Long,token.value.toLong())
-//                }
-//            }
-//            return intOrLong()
-//        }catch (e: NumberFormatException){
-//            DataError("$value can't be regarded as a number")
-//        }
-//    }
-//
 }

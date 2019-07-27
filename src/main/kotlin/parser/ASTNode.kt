@@ -1,6 +1,6 @@
 package parser
 
-import lib.Basic
+import lib.Operation
 import java.util.*
 
 class Data(
@@ -27,11 +27,11 @@ abstract class RootNode(data: Data): Node(data){
     abstract var parameters: LinkedList<ValueNode>
     abstract fun bind(values: LinkedList<ValueNode>)
 }
-class AtomicRootNode(val body: Basic,data: Data): RootNode(data){
+class AtomicRootNode(val body: Operation, data: Data): RootNode(data){
     override lateinit var parameters: LinkedList<ValueNode>
 
     override fun eval(): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return body.procedure(parameters)
     }
 
     override fun bind(values: LinkedList<ValueNode>) {
@@ -80,8 +80,15 @@ class ValueNode(val value: Any,data: Data): Node(data){
         when{
             data.type == Identity.Var -> Env.lookUp(value.toString()).eval()
             value is ASTNode -> value.eval()
+            value is ValueNode -> value.eval()
             else -> value
         }
+}
+
+class ArrayNode(val values: LinkedList<ValueNode>,data: Data): Node(data){
+    override fun eval(): LinkedList<ValueNode> {
+        return values
+    }
 }
 
 //class Node(val identity: Identity, val procedure: ValueNode, val pars: LinkedList<ValueNode>) {
@@ -107,7 +114,7 @@ class ValueNode(val value: Any,data: Data): Node(data){
 //                result
 //            }
 //
-//            is Basic -> func.procedure(values)
+//            is Operation -> func.procedure(values)
 //
 //            else -> DataError("Unknown grammar")
 //        }
