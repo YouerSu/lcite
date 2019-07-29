@@ -78,11 +78,17 @@ class UnSolveRootNode(val body: ValueNode, data: Data): RootNode(data){
 class ValueNode(val value: Any,data: Data): Node(data){
     override fun eval(): Any =
         when{
-            data.type == Identity.Var -> Env.lookUp(value.toString()).eval()
+            data.type == Identity.Var -> Env.lookUp(value as String).eval()
             value is ASTNode -> value.eval()
             value is ValueNode -> value.eval()
             else -> value
         }
+
+    fun getValueType(): Identity =
+        if (data.type == Identity.Var) Env.lookUp(value as String).getValueType()
+        else data.type
+
+
 }
 
 class ArrayNode(val values: LinkedList<ValueNode>,data: Data): Node(data){
@@ -90,52 +96,3 @@ class ArrayNode(val values: LinkedList<ValueNode>,data: Data): Node(data){
         return values
     }
 }
-
-//class Node(val identity: Identity, val procedure: ValueNode, val pars: LinkedList<ValueNode>) {
-//    fun eval(): Any {
-//        parser.Env.intoEnv()
-//        val value = (procedure.eval() as FuncNode).eval(pars)
-//        parser.Env.leftEnv()
-//        return value
-//    }
-//
-//}
-//
-//class FuncNode(result: Identity, private val body: ValueNode, private val vars: LinkedList<ValueNode>) {
-//    fun eval(values: LinkedList<ValueNode>): Any =
-//        when (val func = body.eval()) {
-//            is FuncNode -> {
-//                func.eval(values)
-//            }
-//            is Node -> {
-//                binds(values)
-//                val result = func.eval()
-//                vars.forEach { parser.Env.untied(it.value.toString()) }
-//                result
-//            }
-//
-//            is Operation -> func.procedure(values)
-//
-//            else -> DataError("Unknown grammar")
-//        }
-//
-//    private fun binds(values: LinkedList<ValueNode>) {
-//        for (count in 0..values.lastIndex)
-//            parser.Env.bind(vars[count].value.toString(), values[count])
-//    }
-//
-//}
-//
-//class ValueNode(private val identity: Identity, val value: Any) {
-//    fun eval(): Any = when {
-//            value is Node -> value.eval()
-//            value is ValueNode -> value.eval()
-//            identity == Identity.Var -> getValueNode().eval()
-//            else -> value
-//        }
-//
-//    fun getValueType(): Identity = if (identity == Identity.Var) getValueNode().getValueType() else identity
-//
-//    private fun getValueNode() = if (identity == Identity.Var) parser.Env.lookUp(value.toString()) else this
-//
-//}

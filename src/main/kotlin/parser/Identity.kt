@@ -13,7 +13,6 @@ enum class Identity {
             return str == ")"
         }
     },
-    Number,
     Int {
         override fun isMe(str: kotlin.String): Boolean {
             var index = 0
@@ -71,7 +70,7 @@ enum class Identity {
     AtomicOperation {
         override fun isMe(str: kotlin.String): Boolean {
             return when(str){
-                add, minus, multiply, divide, define, lambda -> true
+                add, minus, multiply, divide, define, lambda, compare, cond -> true
                 else -> false
             }
         }
@@ -84,6 +83,8 @@ enum class Identity {
                 divide -> Divide()
                 define -> Define()
                 lambda -> Lambda()
+                compare -> Ord()
+                cond -> Cond()
                 else -> error("$str isn't a atomic operation")
             }
         }
@@ -96,15 +97,15 @@ enum class Identity {
 
         override fun toValue(str: kotlin.String): Any = str
     },
-    Procedure,
     String {
         override fun isMe(str: kotlin.String): Boolean {
             return str.first() == '"'&&str.last() == '"'
         }
 
-        override fun toValue(str: kotlin.String): kotlin.String = str
+        override fun toValue(str: kotlin.String): kotlin.String{
+            return str.drop(1).dropLast(1)
+        }
     },
-    Cons,
     Escape{
         override fun isMe(str: kotlin.String): Boolean = str == "'"
 
@@ -112,7 +113,12 @@ enum class Identity {
     },
     EOF {
         override fun isMe(str: kotlin.String): Boolean = str.first() == '\u0000'
-    };
+    },
+    Number,
+    Procedure,
+    Cons,
+    Bool,
+    Nil;
 
     open fun isMe(str: kotlin.String): Boolean = false
     open fun toValue(str: kotlin.String): Any = this
@@ -129,3 +135,5 @@ const val multiply = "*"
 const val divide = "/"
 const val define = "def"
 const val lambda = "func"
+const val compare = "compare"
+const val cond = "cond"
