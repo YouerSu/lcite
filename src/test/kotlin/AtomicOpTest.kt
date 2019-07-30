@@ -1,5 +1,6 @@
-package lib
-
+import lib.Add
+import lib.Define
+import lib.Lambda
 import org.junit.Test
 import parser.*
 import java.util.*
@@ -55,6 +56,17 @@ internal class AtomicOpTest(){
         val func = Lambda().procedure(values)
         func.bind(stam)
         assertEquals(23,func.eval())
+    }
+
+    @Test
+    fun condTest(){
+        val sourceCode = """
+            (cond
+                '((> 2 1) 1)
+                '((else) 0)
+            )
+        """.trimIndent()
+        assertEquals(1,Parser(Lexer(sourceCode)).parse().eval())
     }
 
 }
