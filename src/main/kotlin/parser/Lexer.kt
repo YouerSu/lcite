@@ -44,7 +44,8 @@ class Lexer(private val file: String) {
                     peek()
                 } while (
                     isBlank(peek).not()&&
-                    Identity.End.isMe(peek.toString()).not()
+                    Identity.End.isMe(peek.toString()).not()&&
+                    Identity.EOF.isMe(peek.toString()).not()
                 )
                 Identity.values().forEach { if (it.isMe(tokenString)) return Token(it, tokenString, line, col) }
                 error("Can't regard $tokenString as any Identity")
@@ -53,7 +54,7 @@ class Lexer(private val file: String) {
     }
 
     private fun isBlank(char: Char): Boolean{
-        val blank = "\t\n\r\u0000 "
+        val blank = "\t\n\r "
         return blank.contains(char)
     }
 

@@ -9,7 +9,7 @@ class Parser(private val lexer: Lexer) {
         val token = lexer.getNextToken()
         return when(token.identity){
             Identity.Start -> getASTNode()
-            Identity.AtomicOperation -> AtomicRootNode(Identity.AtomicOperation.toValue(token.value) as Operation,Data(token.identity,token.line,token.col))
+            Identity.AtomicOperation -> AtomicRootNode(Identity.AtomicOperation.toValue(token.value) as Operation,Data(Identity.AtomicOperation,token.line,token.col))
             Identity.Escape -> eParse()
             else -> ValueNode(token.identity.toValue(token.value),Data(token.identity,token.line,token.col))
         }
@@ -54,16 +54,10 @@ class Parser(private val lexer: Lexer) {
 
     private fun getRootNode(): RootNode {
         when (val root = parse()) {
-            is ValueNode -> when {
-                root.data.type == Identity.AtomicOperation -> return root.eval() as AtomicRootNode
-                root.data.type == Identity.Var -> return UnSolveRootNode(root,root.data)
-                else -> root.data.DataError("${root.value} isn't a procedure")
-            }
-            is ASTNode -> return UnSolveRootNode(
-                ValueNode(root,root.data),
-                root.data
-            )
-            else -> root.data.DataError("")
+            is ValueNode -> return UnSolveRootNode(root)
+            is ASTNode -> return UnSolveRootNode(ValueNode(root,root.data))
+            is AtomicRootNode -> return root
+            else -> root.data.DataError("Isn't a procedure")
         }
     }
 }

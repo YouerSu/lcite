@@ -3,20 +3,34 @@ package parser
 import lib.*
 
 enum class Identity {
-    Start {
+    AtomicOperation {
         override fun isMe(str: kotlin.String): Boolean {
-            return str == "("
+            return when(str){
+                add, minus, multiply, divide, define, lambda, GT, EQ, LT, cond -> true
+                else -> false
+            }
         }
-    },
-    End {
-        override fun isMe(str: kotlin.String): Boolean {
-            return str == ")"
+
+        override fun toValue(str: kotlin.String): Operation {
+            return when(str){
+                add -> Add()
+                minus -> Minus()
+                multiply -> Multiply()
+                divide -> Divide()
+                define -> Define()
+                lambda -> Lambda()
+                GT -> GT()
+                EQ -> EQ()
+                LT -> LT()
+                cond -> Cond()
+                else -> error("$str isn't a atomic operation")
+            }
         }
     },
     Int {
         override fun isMe(str: kotlin.String): Boolean {
             var index = 0
-            if (str.first() == '-'){
+            if (str.firstOrNull() == '-'){
                 index += 1
             }
             str.drop(index).forEach { if ((it in parser.Number).not()) return false}
@@ -67,28 +81,6 @@ enum class Identity {
 
         override fun toValue(str: kotlin.String): kotlin.Char = str[2]
     },
-    AtomicOperation {
-        override fun isMe(str: kotlin.String): Boolean {
-            return when(str){
-                add, minus, multiply, divide, define, lambda, compare, cond -> true
-                else -> false
-            }
-        }
-
-        override fun toValue(str: kotlin.String): Operation {
-            return when(str){
-                add -> Add()
-                minus -> Minus()
-                multiply -> Multiply()
-                divide -> Divide()
-                define -> Define()
-                lambda -> Lambda()
-                compare -> Ord()
-                cond -> Cond()
-                else -> error("$str isn't a atomic operation")
-            }
-        }
-    },
     Var {
         override fun isMe(str: kotlin.String): Boolean {
             str.forEach { if ((it in parser.Var).not()) return false}
@@ -99,11 +91,21 @@ enum class Identity {
     },
     String {
         override fun isMe(str: kotlin.String): Boolean {
-            return str.first() == '"'&&str.last() == '"'
+            return str.firstOrNull() == '"'&&str.last() == '"'
         }
 
         override fun toValue(str: kotlin.String): kotlin.String{
             return str.drop(1).dropLast(1)
+        }
+    },
+    Start {
+        override fun isMe(str: kotlin.String): Boolean {
+            return str == "("
+        }
+    },
+    End {
+        override fun isMe(str: kotlin.String): Boolean {
+            return str == ")"
         }
     },
     Escape{
@@ -112,13 +114,14 @@ enum class Identity {
         override fun toValue(str: kotlin.String): Any = Escape
     },
     EOF {
-        override fun isMe(str: kotlin.String): Boolean = str.first() == '\u0000'
+        override fun isMe(str: kotlin.String): Boolean = str.firstOrNull() == '\u0000'
     },
     Number,
     Procedure,
     Cons,
     Bool,
-    Nil;
+    Nil,
+    Invoke;
 
     open fun isMe(str: kotlin.String): Boolean = false
     open fun toValue(str: kotlin.String): Any = this
@@ -129,11 +132,14 @@ val Number = '0'..'9'
 val Upper = 'A'..'Z'
 val Lower =  'a'..'z'
 val Var = Upper + Lower + '_'
+
 const val add = "+"
 const val minus = "-"
 const val multiply = "*"
 const val divide = "/"
 const val define = "def"
 const val lambda = "func"
-const val compare = "compare"
+const val GT = ">"
+const val EQ = "="
+const val LT = "<"
 const val cond = "cond"

@@ -16,18 +16,18 @@ abstract class Node(val data: Data){
     abstract fun eval(): Any
 }
 
-class ASTNode(val op: RootNode,val parameters: LinkedList<ValueNode>): Node(op.data){
+class ASTNode(val op: RootNode,val parameters: LinkedList<ValueNode>): Node(Data(Identity.Invoke,op.data.line,op.data.col)){
     override fun eval(): Any {
         op.bind(parameters)
         return op.eval()
     }
 }
 
-abstract class RootNode(data: Data): Node(data){
+abstract class RootNode(line: Int,col: Int): Node(Data(Identity.Procedure,line, col)){
     abstract var parameters: LinkedList<ValueNode>
     abstract fun bind(values: LinkedList<ValueNode>)
 }
-class AtomicRootNode(val body: Operation, data: Data): RootNode(data){
+class AtomicRootNode(val body: Operation, data: Data): RootNode(data.line,data.col){
     override lateinit var parameters: LinkedList<ValueNode>
 
     override fun eval(): Any {
@@ -38,7 +38,7 @@ class AtomicRootNode(val body: Operation, data: Data): RootNode(data){
         parameters = values
     }
 }
-class CombintorRootNode(val body: ValueNode,override var parameters: LinkedList<ValueNode>,data: Data):RootNode(data){
+class CombintorRootNode(val body: ValueNode,override var parameters: LinkedList<ValueNode>):RootNode(body.data.line, body.data.col){
 
 
     override fun eval(): Any {
@@ -55,7 +55,7 @@ class CombintorRootNode(val body: ValueNode,override var parameters: LinkedList<
         }
     }
 }
-class UnSolveRootNode(val body: ValueNode, data: Data): RootNode(data){
+class UnSolveRootNode(val body: ValueNode): RootNode(body.data.line,body.data.col){
     private lateinit var rootBody: RootNode
     override lateinit var parameters: LinkedList<ValueNode>
     override fun eval(): Any {
@@ -78,9 +78,10 @@ class UnSolveRootNode(val body: ValueNode, data: Data): RootNode(data){
 class ValueNode(val value: Any,data: Data): Node(data){
     override fun eval(): Any =
         when{
-            data.type == Identity.Var -> Env.lookUp(value as String).eval()
-            value is ASTNode -> value.eval()
             value is ValueNode -> value.eval()
+            value is ASTNode -> value.eval()
+            value is ArrayNode -> value.eval()
+            data.type == Identity.Var -> Env.lookUp(value as String).eval()
             else -> value
         }
 
