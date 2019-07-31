@@ -23,7 +23,7 @@ internal class AtomicOpTest(){
 
     @Test
     fun lambda(){
-        val paraName = ArrayNode(
+        val paraName = ValueNode(
             LinkedList(
                 listOf(
                     ValueNode("x", Data(Identity.Var,-1,-1)),

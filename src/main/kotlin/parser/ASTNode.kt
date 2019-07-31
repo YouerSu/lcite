@@ -3,6 +3,10 @@ package parser
 import lib.Operation
 import java.util.*
 
+enum class Setting(var bool: Boolean){
+    CALL_BY_NAME(true),
+}
+
 class Data(
     val type: Identity,
     val line: Int,
@@ -40,18 +44,28 @@ class AtomicRootNode(val body: Operation, data: Data): RootNode(data.line,data.c
 }
 class CombintorRootNode(val body: ValueNode,override var parameters: LinkedList<ValueNode>):RootNode(body.data.line, body.data.col){
 
-
     override fun eval(): Any {
-        return body.eval()
+        Env.intoEnv()
+        val value = body.eval()
+        parameters.forEach { Env.untied(it.value as String) }
+        Env.leftEnv()
+        return value
     }
 
     override fun bind(values: LinkedList<ValueNode>) {
         if (values.size != parameters.size){
             error("Wrong parameter table")
-        }else {
-            for (index in 0..parameters.lastIndex){
-                Env.bind(parameters[index].value.toString(),values[index])
+        }else if (Setting.CALL_BY_NAME.bool){
+            val args = values.map { ValueNode(it.eval(),Data(Identity.UnKnow,it.data.line,it.data.col)) }
+            for (index in 0..args.lastIndex){
+                Env.bind(parameters[index].value.toString(),args[index])
             }
+        }else {
+            TODO()
+//            val args = values.map { if (it.data.type == Identity.Var) Env.lookUp(it.value as String) else it}
+//            for (index in 0..args.lastIndex){
+//                Env.bind(parameters[index].value.toString(),args[index])
+//            }
         }
     }
 }
@@ -65,35 +79,16 @@ class UnSolveRootNode(val body: ValueNode): RootNode(body.data.line,body.data.co
     override fun bind(values: LinkedList<ValueNode>) {
         rootBody = body.eval() as RootNode
         parameters = rootBody.parameters
-        if (values.size != parameters.size){
-            error("Wrong parameter table")
-        }else {
-            for (index in 0..parameters.lastIndex){
-                Env.bind(parameters[index].value.toString(),values[index])
-            }
-        }
+        rootBody.bind(values)
     }
 }
 
 class ValueNode(val value: Any,data: Data): Node(data){
     override fun eval(): Any =
-        when{
+        when{//Sometimes RootNode will be arg
             value is ValueNode -> value.eval()
             value is ASTNode -> value.eval()
-            value is ArrayNode -> value.eval()
             data.type == Identity.Var -> Env.lookUp(value as String).eval()
             else -> value
         }
-
-    fun getValueType(): Identity =
-        if (data.type == Identity.Var) Env.lookUp(value as String).getValueType()
-        else data.type
-
-
-}
-
-class ArrayNode(val values: LinkedList<ValueNode>,data: Data): Node(data){
-    override fun eval(): LinkedList<ValueNode> {
-        return values
-    }
 }

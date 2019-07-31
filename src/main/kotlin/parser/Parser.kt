@@ -18,10 +18,17 @@ class Parser(private val lexer: Lexer) {
     private fun eParse(): Node {
         val token = lexer.getNextToken()
         return when(token.identity){
-            Identity.Start -> ArrayNode(
+            Identity.Start -> ValueNode(
                 getParameters(),
                 Data(Identity.Cons,token.line,token.col)
             )
+            Identity.Var -> {
+                return when(token.value){
+                    "true" -> ValueNode(true,Data(Identity.Bool,token.line,token.col))
+                    "false" -> ValueNode(false,Data(Identity.Bool,token.line,token.col))
+                    else -> error("Can't regard ${token.value} as a literal")
+                }
+            }
             else -> error("Can't escape the ${token.value}")
         }
     }

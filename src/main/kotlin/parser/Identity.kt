@@ -121,7 +121,8 @@ enum class Identity {
     Cons,
     Bool,
     Nil,
-    Invoke;
+    Invoke,
+    UnKnow;
 
     open fun isMe(str: kotlin.String): Boolean = false
     open fun toValue(str: kotlin.String): Any = this

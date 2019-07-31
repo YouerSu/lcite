@@ -25,4 +25,24 @@ class Code {
         parser.parse().eval()
         assertEquals(2,parser.parse().eval())
     }
+
+    @Test
+    fun recursive(){
+        val sourceCode =
+            """
+                (def fibNext 
+                    (func '(a b count)
+                        (cond 
+                            '((< count 1) b)
+                            '(else (fibNext b (+ a b) (- count 1)))
+                        )
+                    )
+                )
+                
+                (fibNext 1 1 5)
+            """.trimIndent()
+        val parser = Parser(Lexer(sourceCode))
+        parser.parse().eval()
+        assertEquals(13,parser.parse().eval())
+    }
 }
