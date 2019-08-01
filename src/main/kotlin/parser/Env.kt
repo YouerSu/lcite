@@ -5,43 +5,81 @@ import kotlin.collections.HashMap
 
 class Env {
 
-    //val env = HashMap<Pair<String,Int>, ValueNode>()
-    val dataEnv = HashMap<String, ValueNode>()
-    val copy = Stack<Pair<String,Any?>>()
+    val env = HashMap<Pair<String,Int>, ValueNode>()
 
     companion object{
 
-        private val env = Env()
-        private val dataEnv = env.dataEnv
-        private val copy = env.copy
-        //val deep = 0
+        private val env = Env().env
+        internal var deepOfEnv = 0
+        internal var toDeep = -1
+        internal var nowDeep = 0
+        private val copy = Stack<Pair<String,ValueNode?>>()
 
-        fun intoEnv(){
-            copy.add(Pair("NextEnv",null))
-        }
-
-        fun leftEnv(){
-            while (copy.empty() && copy.peek().second is ValueNode){
-                copy.pop().let { dataEnv[it.first] = it.second as ValueNode }
+        fun toEnv(deep: Int){
+            if (deep <= nowDeep) {
+                deepOfEnv = nowDeep
+                toDeep = deep
+                nowDeep = deep
+            }else {
+                //here is unreachable
+                error("Out of Env")
             }
         }
 
-        fun lookUp(key: String): ValueNode {
-            dataEnv[key]?.let { return it }
+        fun outEnv(toDeep: Int, nowDeep: Int, deepOfEnv: Int) {
+            this.toDeep = toDeep
+            this.nowDeep = nowDeep
+            this.deepOfEnv = deepOfEnv
+        }
+
+        fun intoEnv(){
+            if (toDeep < 0){
+                deepOfEnv += 1
+                nowDeep = deepOfEnv
+            }else {
+                copy.add(Pair("NextEnv",null))
+                nowDeep += 1
+            }
+        }
+
+        fun leftEnv(){
+            if (toDeep < 0){
+                deepOfEnv -= 1
+                nowDeep = deepOfEnv
+            }else {
+                while(copy.isEmpty().not()){
+                    val elem = copy.pop()
+                    if (elem.second is ValueNode){
+                        env[Pair(elem.first,nowDeep)] = elem.second!!
+                    }else {
+                        break
+                    }
+                }
+                if (nowDeep-1 <= toDeep){
+                    nowDeep -= 1
+                }else {
+                    //here is unreachable
+                    error("Out of Env")
+                }
+            }
+        }
+
+        fun lookUp(key: String): ValueNode{
+            for (deep in nowDeep downTo 0) {
+                env[Pair(key, deep)]?.let { return it }
+            }
             error("Out of bound: $key")
         }
 
-        fun lookUp(key: Pair<String,Int>){
-
-        }
-
         fun bind(key: String, value: ValueNode){
-            dataEnv[key]?.let { copy.add(Pair(key,it)) }
-            dataEnv[key] = value
+            if (toDeep >= 0){
+                env[Pair(key, nowDeep)]?.let { copy.push(Pair(key,it)) }
+            }
+            env[Pair(key, nowDeep)] = value
         }
 
         fun untied(key: String){
-            dataEnv.remove(key)
+            env.remove(Pair(key, nowDeep))
         }
 
     }

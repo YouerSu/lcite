@@ -4,7 +4,7 @@ import lib.Operation
 import java.util.*
 
 enum class Setting(var bool: Boolean){
-    CALL_BY_NAME(true),
+    CALL_BY_VALUE(false),
 }
 
 class Data(
@@ -35,7 +35,11 @@ class AtomicRootNode(val body: Operation, data: Data): RootNode(data.line,data.c
     override lateinit var parameters: LinkedList<ValueNode>
 
     override fun eval(): Any {
+        //Env.intoEnv()
         return body.procedure(parameters)
+        //Env.leftEnv()
+        //return result
+
     }
 
     override fun bind(values: LinkedList<ValueNode>) {
@@ -45,7 +49,6 @@ class AtomicRootNode(val body: Operation, data: Data): RootNode(data.line,data.c
 class CombintorRootNode(val body: ValueNode,override var parameters: LinkedList<ValueNode>):RootNode(body.data.line, body.data.col){
 
     override fun eval(): Any {
-        Env.intoEnv()
         val value = body.eval()
         parameters.forEach { Env.untied(it.value as String) }
         Env.leftEnv()
@@ -55,17 +58,18 @@ class CombintorRootNode(val body: ValueNode,override var parameters: LinkedList<
     override fun bind(values: LinkedList<ValueNode>) {
         if (values.size != parameters.size){
             error("Wrong parameter table")
-        }else if (Setting.CALL_BY_NAME.bool){
+        }else if (Setting.CALL_BY_VALUE.bool){
             val args = values.map { ValueNode(it.eval(),Data(Identity.UnKnow,it.data.line,it.data.col)) }
+            Env.intoEnv()
             for (index in 0..args.lastIndex){
                 Env.bind(parameters[index].value.toString(),args[index])
             }
         }else {
-            TODO()
-//            val args = values.map { if (it.data.type == Identity.Var) Env.lookUp(it.value as String) else it}
-//            for (index in 0..args.lastIndex){
-//                Env.bind(parameters[index].value.toString(),args[index])
-//            }
+            val args = values.map { EnvNode.pack(it) }
+            Env.intoEnv()
+            for (index in 0..args.lastIndex){
+                Env.bind(parameters[index].value.toString(),args[index])
+            }
         }
     }
 }
@@ -83,6 +87,7 @@ class UnSolveRootNode(val body: ValueNode): RootNode(body.data.line,body.data.co
     }
 }
 
+open
 class ValueNode(val value: Any,data: Data): Node(data){
     override fun eval(): Any =
         when{//Sometimes RootNode will be arg
@@ -91,4 +96,27 @@ class ValueNode(val value: Any,data: Data): Node(data){
             data.type == Identity.Var -> Env.lookUp(value as String).eval()
             else -> value
         }
+}
+
+class EnvNode(value: Node, val deep: Int = Env.nowDeep): ValueNode(value,value.data){
+    override fun eval(): Any {
+        val deepOfEnv = Env.deepOfEnv
+        val toDeep = Env.toDeep
+        val nowDeep = Env.nowDeep
+        Env.toEnv(deep)
+        val result = (value as Node).eval()
+        Env.outEnv(toDeep,nowDeep,deepOfEnv)
+        return result
+    }
+
+    companion object{
+        fun pack(node: ValueNode): ValueNode{
+            return when{
+                node is EnvNode -> node
+                node.value is ASTNode -> EnvNode(ASTNode(node.value.op, LinkedList(node.value.parameters.map { pack(it) })))
+                node.data.type == Identity.Var -> EnvNode(node)
+                else -> node
+            }
+        }
+    }
 }

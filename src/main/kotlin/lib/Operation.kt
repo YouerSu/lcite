@@ -10,9 +10,17 @@ abstract class Operation {
 class Define: Operation(){
     override fun procedure(values: LinkedList<ValueNode>): Unit {
         Env.bind(
-            values.first.value as String,
+            getVarName(values.first),
             values.last
         )
+    }
+
+    private fun getVarName(node: ValueNode): String {
+        return when(node){
+            is EnvNode -> (node.value as ValueNode).value as String
+            is ValueNode -> node.value as String
+            else -> node.data.DataError("Isn't a var")
+        }
     }
 }
 
