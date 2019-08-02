@@ -6,7 +6,7 @@ enum class Identity {
     AtomicOperation {
         override fun isMe(str: kotlin.String): Boolean {
             return when(str){
-                add, minus, multiply, divide, define, lambda, GT, EQ, LT, cond -> true
+                add, minus, multiply, divide, define, lambda, GT, EQ, LT, cond, head, tail, print -> true
                 else -> false
             }
         }
@@ -23,6 +23,9 @@ enum class Identity {
                 EQ -> EQ()
                 LT -> LT()
                 cond -> Cond()
+                head -> Head()
+                tail -> Tail()
+                print -> Print()
                 else -> error("$str isn't a atomic operation")
             }
         }
@@ -144,3 +147,6 @@ const val GT = ">"
 const val EQ = "="
 const val LT = "<"
 const val cond = "cond"
+const val head = "head"
+const val tail = "tail"
+const val print = "print"

@@ -69,4 +69,26 @@ internal class AtomicOpTest(){
         assertEquals(1,Parser(Lexer(sourceCode)).parse().eval())
     }
 
+    @Test
+    fun head(){
+        val sourceCode = """
+            (head '(1 2 3 4 5))
+        """.trimIndent()
+        assertEquals(1,Parser(Lexer(sourceCode)).parse().eval())
+    }
+
+    @Test
+    fun tail(){
+        val sourceCode = """
+            (tail '(1 2 3 4 5))
+        """.trimIndent()
+        val result = Parser(Lexer(sourceCode)).parse().eval() as LinkedList<ValueNode>
+        assertEquals(listOf(2,3,4,5),result.map { it.eval() })
+    }
+
+    @Test
+    fun print(){
+        Parser(Lexer("(print \"Hello,World!\")")).parse().eval()
+    }
+
 }

@@ -45,4 +45,23 @@ class Code {
         parser.parse().eval()
         assertEquals(13,parser.parse().eval())
     }
+
+    @Test
+    fun useLambda(){
+        val sourceCode =
+            """
+                (def makeFunc 
+                    (func '(a b c)
+                        (a b c)
+                    )
+                )
+                
+                (makeFunc + 1 2)
+            """.trimIndent()
+        val parser = Parser(Lexer(sourceCode))
+        parser.parse().eval()
+        assertEquals(3,parser.parse().eval())
+
+    }
+
 }

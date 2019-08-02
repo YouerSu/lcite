@@ -4,7 +4,7 @@ import lib.Operation
 import java.util.*
 
 enum class Setting(var bool: Boolean){
-    CALL_BY_VALUE(false),
+    CALL_BY_VALUE(true),
 }
 
 class Data(
@@ -82,7 +82,6 @@ class UnSolveRootNode(val body: ValueNode): RootNode(body.data.line,body.data.co
 
     override fun bind(values: LinkedList<ValueNode>) {
         rootBody = body.eval() as RootNode
-        parameters = rootBody.parameters
         rootBody.bind(values)
     }
 }
